@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>로또 조합 생성기 — 구간·끝자리·연속번호 필터</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#182230;--muted:#667085;--line:#e2e8f0;--blue:#2458c6;--blue2:#eaf1ff;--green:#16794b;--greenbg:#e7f7ef;--amber:#8a5100;--amberbg:#fff4d6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:960px;margin:0 auto;padding:24px 16px 48px}.hero{background:linear-gradient(135deg,#143c89,#3478df);color:white;padding:25px;border-radius:20px;margin-bottom:18px}.hero h1{font-size:clamp(24px,4vw,34px);line-height:1.15;margin:0 0 10px}.hero p{margin:0;opacity:.93;max-width:780px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 4px 16px rgba(16,24,40,.035)}h2{font-size:20px;margin:0 0 13px}h3{font-size:16px;margin:0 0 6px}.sub{color:var(--muted);font-size:14px}.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:12px}.filter{border:1px solid var(--line);border-radius:12px;padding:13px;display:grid;grid-template-columns:25px 1fr;gap:9px;align-items:start}.filter input[type=checkbox]{width:18px;height:18px;margin:3px 0;accent-color:var(--blue)}.filter label{font-weight:650;cursor:pointer}.desc{font-size:13px;color:var(--muted);margin-top:3px}.controls{display:flex;flex-wrap:wrap;gap:12px;align-items:end}.field{display:flex;flex-direction:column;gap:5px}.field label{font-size:13px;color:var(--muted);font-weight:650}.field input,.field select{border:1px solid #cbd5e1;border-radius:9px;background:#fff;padding:9px 10px;font:inherit;min-width:100px}.field input[type=number]{width:90px}.field button,.btn{cursor:pointer;border:0;border-radius:10px;padding:11px 15px;font-weight:750;font:inherit}.primary{background:var(--blue);color:#fff}.secondary{background:#eef2f7;color:#182230}.buttonrow{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}.notice{border-radius:12px;background:var(--amberbg);color:var(--amber);padding:12px 14px;font-size:14px;margin-top:14px}.notice strong{display:block;margin-bottom:3px}.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.ticket{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.tickethead{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:12px}.tickethead strong{font-size:14px}.balls{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.ball{width:39px;height:39px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#fff;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}.b1{background:#f0b323;color:#3c2b00}.b2{background:#397de0}.b3{background:#df4f55}.b4{background:#8c65bd}.b5{background:#24946c}.metrics{font-size:13px;color:var(--muted);line-height:1.8}.tag{display:inline-block;border-radius:999px;background:var(--blue2);color:var(--blue);padding:3px 8px;font-size:12px;font-weight:700}.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}.stat{padding:12px;border:1px solid var(--line);border-radius:12px}.stat .value{font-size:23px;font-weight:800;margin-top:4px}.bar{height:8px;background:#e7edf5;border-radius:99px;overflow:hidden;margin-top:7px}.bar span{height:100%;display:block;background:var(--blue)}.fine{font-size:13px;color:var(--muted)}.hidden{display:none!important}.status{margin-top:12px;font-size:14px;color:var(--muted)}footer{font-size:13px;color:var(--muted);padding:8px 3px}
+@media(max-width:540px){main{padding:12px}.hero{padding:20px}.card{padding:15px}.ball{width:35px;height:35px}.controls{align-items:stretch}.controls .field{flex:1}.field input[type=number]{width:100%}}
+</style>
+</head>
+<body>
+<main>
+<section class="hero">
+<h1>로또 조합 생성기</h1>
+<p>홀짝·합계·연속번호뿐 아니라 같은 십의 자리 구간과 끝자리 겹침까지 직접 조절하세요. 각 필터는 개별로 켜고 끌 수 있습니다.</p>
+</section>
+<section class="card">
+<h2>1. 적용할 필터</h2>
+<p class="sub">기본값은 과도한 몰림만 완만하게 제한하는 설정입니다. 체크를 해제하면 해당 조건은 적용하지 않습니다.</p>
+<div class="filters">
+ <div class="filter"><input id="fParity" type="checkbox" checked><div><label for="fParity">홀짝 균형</label><div class="desc">홀수 2~4개, 짝수 2~4개 (3:3을 강제하지 않음)</div></div></div>
+ <div class="filter"><input id="fSum" type="checkbox" checked><div><label for="fSum">번호 합계 범위</label><div class="desc">아래 설정한 최솟값~최댓값 안</div><div class="controls" style="margin-top:8px"><div class="field"><label for="sumMin">최솟값</label><input id="sumMin" type="number" min="21" max="255" value="100"></div><div class="field"><label for="sumMax">최댓값</label><input id="sumMax" type="number" min="21" max="255" value="170"></div></div></div></div>
+ <div class="filter"><input id="fAdj" type="checkbox" checked><div><label for="fAdj">연속 인접쌍 수 제한</label><div class="desc">차이가 1인 쌍의 총수. 예: 2·3·4는 인접쌍 2개로 계산</div><div class="field" style="margin-top:8px"><label for="adjMax">허용할 인접쌍 최대</label><select id="adjMax"><option value="0">0쌍</option><option value="1">1쌍</option><option value="2" selected>2쌍</option><option value="3">3쌍</option><option value="4">4쌍</option><option value="5">5쌍</option></select></div></div></div>
+ <div class="filter"><input id="fDecade" type="checkbox" checked><div><label for="fDecade">같은 십의 자리 구간 몰림 제한</label><div class="desc">구간: 1~9, 10~19, 20~29, 30~39, 40~45</div><div class="field" style="margin-top:8px"><label for="decadeMax">한 구간에 허용할 최대 번호</label><select id="decadeMax"><option value="2">2개</option><option value="3" selected>3개</option><option value="4">4개</option><option value="5">5개</option><option value="6">6개</option></select></div></div></div>
+ <div class="filter"><input id="fUnits" type="checkbox" checked><div><label for="fUnits">끝자리 중복쌍 제한</label><div class="desc">같은 일의 자리 숫자끼리의 쌍 수. 예: 22·32·42는 중복쌍 3개</div><div class="field" style="margin-top:8px"><label for="unitMax">허용할 끝자리 중복쌍 최대</label><select id="unitMax"><option value="0">0쌍</option><option value="1">1쌍</option><option value="2" selected>2쌍</option><option value="3">3쌍</option><option value="4">4쌍</option><option value="5">5쌍</option><option value="6">6쌍</option><option value="10">10쌍</option><option value="10">제한 없음(최대 10)</option></select></div></div></div>
+ <div class="filter"><input id="fLowHigh" type="checkbox" checked><div><label for="fLowHigh">저번호·고번호 균형</label><div class="desc">저번호 1~22와 고번호 23~45가 각각 2~4개</div></div></div>
+</div>
+<div class="notice"><strong>확률 해석 주의</strong>필터는 번호 모양을 조절할 뿐, 특정 6개 조합의 1등 확률을 높이지 않습니다. 아래 계산은 필터를 통과하는 조합이 전체 8,145,060개 중 몇 %인지를 보여줍니다.</div>
+<div class="buttonrow"><button class="btn primary" id="generate">랜덤 번호 생성</button><button class="btn secondary" id="calc">필터 통과 조합 비율 정확히 계산</button><button class="btn secondary" id="reset">기본값 복원</button></div>
+<div class="controls" style="margin-top:14px"><div class="field"><label for="lineCount">생성할 게임 수</label><select id="lineCount"><option>1</option><option>3</option><option>5</option><option selected>10</option><option>15</option><option>20</option></select></div><div class="field"><label for="unique">중복 조합</label><select id="unique"><option value="yes" selected>한 번 생성한 조합은 중복 제외</option><option value="no">중복 허용</option></select></div></div>
+<div id="status" class="status" aria-live="polite"></div>
+<div id="coverage" class="statgrid"></div>
+</section>
+<section class="card">
+<h2>2. 생성 결과</h2>
+<div id="results" class="results"><p class="sub">필터를 설정한 뒤 ‘랜덤 번호 생성’을 누르세요.</p></div>
+<div class="buttonrow"><button class="btn secondary" id="copy">결과 복사</button><button class="btn secondary" id="download">텍스트 파일로 저장</button></div>
+</section>
+<section class="card">
+<h2>3. 기준을 이렇게 잡은 이유</h2>
+<div class="statgrid">
+ <div class="stat"><div class="sub">연속 인접쌍 0~2</div><div class="value">98.74%</div><div class="fine">이 조건만 적용했을 때 통과 비율</div></div>
+ <div class="stat"><div class="sub">한 십의 자리 구간 최대 3개</div><div class="value">93.90%</div><div class="fine">4개 이상 한 구간에 몰리는 경우만 제외</div></div>
+ <div class="stat"><div class="sub">끝자리 중복쌍 최대 2</div><div class="value">90.31%</div><div class="fine">세 번호가 모두 같은 끝자리인 경우 등을 제한</div></div>
+ <div class="stat"><div class="sub">합계 100~170</div><div class="value">75.50%</div><div class="fine">이 조건만 적용했을 때 통과 비율</div></div>
+</div>
+<p class="sub" style="margin-top:14px">각 비율은 전체 가능한 6개 조합을 전수 계산한 이론값입니다. 여러 필터를 함께 적용한 비율은 필터 간 관계 때문에 개별 비율을 단순히 곱하면 안 됩니다. 위 계산 버튼으로 현재 설정의 교집합을 정확히 계산할 수 있습니다.</p>
+<div class="notice"><strong>실제 1등 확률</strong>중복 없이 서로 다른 조합을 10게임 구매하면 1등 확률은 10/8,145,060, 즉 약 1/814,506입니다. 어떤 필터를 쓰더라도 서로 다른 10개 조합이라면 이 확률은 같습니다. 필터의 실제 역할은 선택 취향과 조합 모양을 관리하는 것입니다.</div>
+</section>
+<footer>독립 실행형 HTML입니다. 파일을 내려받아 브라우저에서 열면 인터넷 연결 없이 작동합니다. 출현 이력은 예측 보장이 아니며, 책임 있는 범위에서 이용하세요.</footer>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const allTotal=8145060;
+const filterIds=['fParity','fSum','fAdj','fDecade','fUnits','fLowHigh'];
+function config(){return {parity:$('fParity').checked,sum:$('fSum').checked,sumMin:Math.max(21,Math.min(255,Number($('sumMin').value)||100)),sumMax:Math.max(21,Math.min(255,Number($('sumMax').value)||170)),adj:$('fAdj').checked,adjMax:Number($('adjMax').value),decade:$('fDecade').checked,decadeMax:Number($('decadeMax').value),units:$('fUnits').checked,unitMax:Number($('unitMax').value),lowHigh:$('fLowHigh').checked};}
+function group(x){return x<=9?0:x<=19?1:x<=29?2:x<=39?3:4;}
+function metrics(nums){let sum=0,odd=0,low=0,adj=0,run=1,maxRun=1;let grp=[0,0,0,0,0], units=Array(10).fill(0);for(let i=0;i<6;i++){let x=nums[i];sum+=x;odd+=x%2;low+=x<=22?1:0;grp[group(x)]++;units[x%10]++;if(i){if(x===nums[i-1]+1){adj++;run++;maxRun=Math.max(maxRun,run)}else run=1;}}let unitPairs=units.reduce((s,n)=>s+n*(n-1)/2,0);return {sum,odd,even:6-odd,low,high:6-low,adj,maxRun,grp,maxGroup:Math.max(...grp),units,unitPairs};}
+function pass(nums,cfg){let m=metrics(nums);if(cfg.parity&&(m.odd<2||m.odd>4))return false;if(cfg.sum&&(cfg.sumMin>cfg.sumMax||m.sum<cfg.sumMin||m.sum>cfg.sumMax))return false;if(cfg.adj&&m.adj>cfg.adjMax)return false;if(cfg.decade&&m.maxGroup>cfg.decadeMax)return false;if(cfg.units&&m.unitPairs>cfg.unitMax)return false;if(cfg.lowHigh&&(m.low<2||m.low>4))return false;return true;}
+function randInt(n){if(window.crypto&&crypto.getRandomValues){const max=4294967296,lim=Math.floor(max/n)*n;let v;do{const a=new Uint32Array(1);crypto.getRandomValues(a);v=a[0]}while(v>=lim);return v%n;}return Math.floor(Math.random()*n);}
+function randomLine(){let a=[];while(a.length<6){let n=randInt(45)+1;if(!a.includes(n))a.push(n)}return a.sort((x,y)=>x-y);}
+function ballsHTML(nums){return nums.map(n=>`<span class="ball b${n<=10?1:n<=20?2:n<=30?3:n<=40?4:5}">${n}</span>`).join('');}
+function decadeText(m){return m.grp.map((n,i)=>`${['1~9','10~19','20~29','30~39','40~45'][i]}:${n}`).join(' · ')}
+function resultText(line,i){let m=metrics(line);return `${String(i+1).padStart(2,'0')}. ${line.join(', ')} | 합계 ${m.sum} | 홀짝 ${m.odd}:${m.even} | 연속 인접쌍 ${m.adj} | 끝자리 중복쌍 ${m.unitPairs} | 구간 ${m.grp.join('-')} | 저고 ${m.low}:${m.high}`}
+let generated=[];
+function renderResults(){const el=$('results');if(!generated.length){el.innerHTML='<p class="sub">조건에 맞는 번호를 생성해 주세요.</p>';return;}el.innerHTML=generated.map((nums,i)=>{let m=metrics(nums);return `<div class="ticket"><div class="tickethead"><strong>게임 ${i+1}</strong><span class="tag">합계 ${m.sum}</span></div><div class="balls">${ballsHTML(nums)}</div><div class="metrics">홀짝 ${m.odd}:${m.even} · 저고 ${m.low}:${m.high}<br>인접 연속쌍 ${m.adj}개 · 끝자리 중복쌍 ${m.unitPairs}개<br>십의 자리 구간별 개수: ${decadeText(m)}</div></div>`}).join('');}
+$('generate').addEventListener('click',()=>{let cfg=config(),need=Number($('lineCount').value),unique=$('unique').value==='yes';if(cfg.sum&&cfg.sumMin>cfg.sumMax){$('status').textContent='합계 최솟값은 최댓값보다 클 수 없습니다.';return;}let list=[],seen=new Set(),tries=0,maxTries=Math.max(250000,need*50000);while(list.length<need&&tries<maxTries){tries++;let line=randomLine(),key=line.join('-');if(unique&&seen.has(key))continue;if(!pass(line,cfg))continue;seen.add(key);list.push(line);}generated=list;renderResults();$('status').textContent=`${list.length}/${need}게임 생성 · ${tries.toLocaleString()}회 후보 추출 시도`;if(list.length<need)$('status').textContent+=' · 조건이 너무 엄격해 목표 수만큼 만들지 못했습니다. 일부 필터를 끄거나 완화하세요.';});
+$('copy').addEventListener('click',async()=>{if(!generated.length){$('status').textContent='먼저 번호를 생성하세요.';return;}let txt=generated.map((x,i)=>resultText(x,i)).join('\n');try{await navigator.clipboard.writeText(txt);$('status').textContent='결과를 클립보드에 복사했습니다.';}catch(e){const t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');t.remove();$('status').textContent='결과를 복사했습니다.';}});
+$('download').addEventListener('click',()=>{if(!generated.length){$('status').textContent='먼저 번호를 생성하세요.';return;}let txt=generated.map((x,i)=>resultText(x,i)).join('\n');let b=new Blob(['\ufeff'+txt],{type:'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download='lotto_numbers.txt';a.click();URL.revokeObjectURL(u);});
+$('reset').addEventListener('click',()=>{['fParity','fSum','fAdj','fDecade','fUnits','fLowHigh'].forEach(id=>$(id).checked=true);$('sumMin').value=100;$('sumMax').value=170;$('adjMax').value=2;$('decadeMax').value=3;$('unitMax').value=2;$('lineCount').value='10';$('unique').value='yes';$('coverage').innerHTML='';$('status').textContent='기본 설정을 복원했습니다.';});
+$('calc').addEventListener('click',async()=>{let cfg=config();if(cfg.sum&&cfg.sumMin>cfg.sumMax){$('status').textContent='합계 최솟값은 최댓값보다 클 수 없습니다.';return;}const btn=$('calc');btn.disabled=true;btn.textContent='전체 조합 계산 중…';$('coverage').innerHTML='';let accepted=0,total=0,start=performance.now();$('status').textContent='8,145,060개 조합을 전수 검사합니다. 잠시 기다려 주세요.';
+// Enumerate each 6-number combination exactly once, yielding between outer loops for responsiveness.
+for(let a=1;a<=40;a++){for(let b=a+1;b<=41;b++){for(let c=b+1;c<=42;c++){for(let d=c+1;d<=43;d++){for(let e=d+1;e<=44;e++){for(let f=e+1;f<=45;f++){total++;if(pass([a,b,c,d,e,f],cfg))accepted++;}}}}}if(a%2===0){$('status').textContent=`전수 검사 중… ${total.toLocaleString()} / ${allTotal.toLocaleString()}`;await new Promise(resolve=>setTimeout(resolve,0));}}
+let pct=accepted/allTotal*100;let seconds=((performance.now()-start)/1000).toFixed(1);$('coverage').innerHTML=`<div class="stat"><div class="sub">통과 조합 수</div><div class="value">${accepted.toLocaleString()}</div><div class="fine">전체 ${allTotal.toLocaleString()}개 중</div></div><div class="stat"><div class="sub">전체 대비 통과 비율</div><div class="value">${pct.toFixed(3)}%</div><div class="bar"><span style="width:${pct}%"></span></div><div class="fine">이론적 조합 커버리지</div></div><div class="stat"><div class="sub">필터로 제외된 조합</div><div class="value">${(allTotal-accepted).toLocaleString()}</div><div class="fine">전체 대비 ${(100-pct).toFixed(3)}%</div></div>`;$('status').textContent=`정확한 전수 계산 완료 · ${seconds}초 소요`;btn.disabled=false;btn.textContent='필터 통과 조합 비율 정확히 계산';});
+</script>
+</body>
+</html>
